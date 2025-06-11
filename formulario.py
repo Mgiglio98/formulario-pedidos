@@ -40,6 +40,7 @@ df_insumos = pd.concat([insumos_vazios, df_insumos], ignore_index=True)
 
 # --- Dados do Pedido ---
 st.subheader("Dados do Pedido")
+
 # Aplica reset visual dos campos de pedido se necessário
 if st.session_state.resetar_pedido:
     st.session_state.pedido_numero = ""
@@ -84,6 +85,7 @@ if st.session_state.resetar_insumo:
 
 st.subheader("Adicionar Insumo")
 descricao = st.selectbox("Descrição do insumo", df_insumos["Descrição"].unique(), index=0, key="descricao")
+descricao_livre = st.text_input("Ou digite o nome do insumo, se não estiver na lista", key="descricao_livre")
 
 codigo = ""
 unidade = ""
@@ -100,9 +102,10 @@ complemento = st.text_area("Complemento", key="complemento")
 
 # --- Botão para adicionar insumo ---
 if st.button("➕ Adicionar insumo"):
-    if descricao and codigo and unidade and quantidade > 0:
+    descricao_final = descricao_livre if descricao_livre else descricao
+    if descricao_final and unidade.strip() and quantidade > 0:
         novo_insumo = {
-            "descricao": descricao,
+            "descricao": descricao_final,
             "codigo": codigo,
             "unidade": unidade,
             "quantidade": quantidade,
@@ -130,6 +133,20 @@ if st.session_state.insumos:
 
 # --- Botão final para gerar Excel ---
 if st.button("📤 Enviar Pedido"):
+    campos_obrigatorios = [
+        st.session_state.pedido_numero,
+        st.session_state.data_pedido,
+        st.session_state.solicitante,
+        st.session_state.executivo,
+        st.session_state.obra_selecionada,
+        st.session_state.cnpj,
+        st.session_state.endereco,
+        st.session_state.cep
+    ]
+    
+    if not all(campos_obrigatorios):
+        st.warning("⚠️ Preencha todos os campos obrigatórios antes de enviar o pedido.")
+        st.stop()
     try:
         caminho_modelo = "Modelo_Pedido.xlsx"
         wb = load_workbook(caminho_modelo)
