@@ -183,8 +183,7 @@ if st.button("📤 Enviar Pedido"):
         
         # Agora sim, após permitir o download, faz o reset
         resetar_formulario()
-        st.rerun()
-
+        # st.rerun()
 
     except Exception as e:
         st.error(f"Erro ao gerar Excel: {e}")
