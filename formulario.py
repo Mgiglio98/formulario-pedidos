@@ -85,7 +85,6 @@ if st.session_state.resetar_insumo:
 
 st.subheader("Adicionar Insumo")
 descricao = st.selectbox("Descrição do insumo", df_insumos["Descrição"].unique(), index=0, key="descricao")
-descricao_livre = st.text_input("Ou digite o nome do insumo, se não estiver na lista", key="descricao_livre")
 
 codigo = ""
 unidade = ""
@@ -94,6 +93,9 @@ if descricao:
     dados_insumo = df_insumos[df_insumos["Descrição"] == descricao].iloc[0]
     codigo = dados_insumo["Código"]
     unidade = dados_insumo["Unidade"]
+
+st.write("Caso o insumo não esteja listado acima, digite abaixo:")
+descricao_livre = st.text_input("Nome do insumo (livre)", key="descricao_livre")
 
 codigo = st.text_input("Código do insumo", value=codigo, key="codigo")
 unidade = st.text_input("Unidade", value=unidade, key="unidade")
