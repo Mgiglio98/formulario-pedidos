@@ -153,14 +153,15 @@ if st.button("📤 Enviar Pedido"):
             ws[f"H{linha}"] = insumo["complemento"]
             linha += 1
 
-        nome_saida = f"pedido_{st.session_state.pedido_numero or 'sem_numero'}.xlsx"
+        nome_saida = f"pedido_{st.session_state.pedido_numero or 'sem_numero'}_{st.session_state.obra_selecionada}.xlsx"
         wb.save(nome_saida)
         # Botão de download deve vir antes do reset e rerun
         with open(nome_saida, "rb") as f:
             excel_bytes = f.read()
         
-        st.success("Pedido gerado com sucesso!")
-        
+        st.success("✅ Pedido gerado com sucesso!")
+
+        st.markdown("Clique abaixo para baixar o arquivo gerado:")
         st.download_button(
             label="📥 Baixar pedido em Excel",
             data=excel_bytes,
