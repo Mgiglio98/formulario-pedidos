@@ -68,9 +68,9 @@ if obra_selecionada:
     endereco = dados_obra["ENDEREÇO"]
     cep = dados_obra["Cep"]
 
-cnpj = st.text_input("CNPJ/CPF", value=cnpj, key="cnpj")
-endereco = st.text_input("Endereço", value=endereco, key="endereco")
-cep = st.text_input("CEP", value=cep, key="cep")
+st.text_input("CNPJ/CPF", value=cnpj, key="cnpj", disabled=True)
+st.text_input("Endereço", value=endereco, key="endereco", disabled=True)
+st.text_input("CEP", value=cep, key="cep", disabled=True)
 
 # --- Adicionar Insumo ---
 
@@ -97,14 +97,14 @@ if descricao:
 st.write("Caso o insumo não esteja listado acima, digite abaixo:")
 descricao_livre = st.text_input("Nome do insumo (livre)", key="descricao_livre")
 
-codigo = st.text_input("Código do insumo", value=codigo, key="codigo")
+st.text_input("Código do insumo", value=codigo, key="codigo", disabled=True)
 unidade = st.text_input("Unidade", value=unidade, key="unidade")
 quantidade = st.number_input("Quantidade", min_value=0.0, format="%.2f", key="quantidade")
 complemento = st.text_area("Complemento", key="complemento")
 
 # --- Botão para adicionar insumo ---
 if st.button("➕ Adicionar insumo"):
-    descricao_final = descricao_livre if descricao_livre else descricao
+    descricao_final = descricao if descricao else descricao_livre
     if descricao_final and unidade.strip() and quantidade > 0:
         novo_insumo = {
             "descricao": descricao_final,
