@@ -14,23 +14,17 @@ def resetar_formulario():
     resetar_campos_insumo()
     st.session_state.insumos = []
 
-# Inicializa a lista de insumos na sessão
+# Inicializações
 if "insumos" not in st.session_state:
     st.session_state.insumos = []
-
-# Inicializa o flag de reset para os campos de insumo
 if "resetar_insumo" not in st.session_state:
     st.session_state.resetar_insumo = False
-
-# Inicializa o flag de reset para todos os campos
 if "resetar_pedido" not in st.session_state:
     st.session_state.resetar_pedido = False
 
 # --- Carregar dados das planilhas ---
 df_empreend = pd.read_excel("Empreendimentos.xlsx")
 df_insumos = pd.read_excel("Insumos.xlsx")
-
-# Adiciona opção vazia no topo
 df_empreend.loc[-1] = ["", "", "", ""]
 df_empreend.index = df_empreend.index + 1
 df_empreend = df_empreend.sort_index()
@@ -40,8 +34,6 @@ df_insumos = pd.concat([insumos_vazios, df_insumos], ignore_index=True)
 
 # --- Dados do Pedido ---
 st.subheader("Dados do Pedido")
-
-# Aplica reset visual dos campos de pedido se necessário
 if st.session_state.resetar_pedido:
     st.session_state.pedido_numero = ""
     st.session_state.data_pedido = date.today()
@@ -52,29 +44,24 @@ if st.session_state.resetar_pedido:
     st.session_state.endereco = ""
     st.session_state.cep = ""
     st.session_state.resetar_pedido = False
+
 pedido_numero = st.text_input("Pedido de material Nº", key="pedido_numero")
 data_pedido = st.date_input("Data", value=st.session_state.get("data_pedido", date.today()), key="data_pedido")
 solicitante = st.text_input("Solicitante", key="solicitante")
 executivo = st.text_input("Executivo", key="executivo")
 obra_selecionada = st.selectbox("Obra", df_empreend["NOME"].unique(), index=0, key="obra_selecionada")
 
-cnpj = ""
-endereco = ""
-cep = ""
-
 if obra_selecionada:
     dados_obra = df_empreend[df_empreend["NOME"] == obra_selecionada].iloc[0]
-    cnpj = dados_obra["EMPRD_CNPJFAT"]
-    endereco = dados_obra["ENDEREÇO"]
-    cep = dados_obra["Cep"]
+    st.session_state["cnpj"] = dados_obra["EMPRD_CNPJFAT"]
+    st.session_state["endereco"] = dados_obra["ENDEREÇO"]
+    st.session_state["cep"] = dados_obra["Cep"]
 
-st.text_input("CNPJ/CPF", value=cnpj, disabled=True)
-st.text_input("Endereço", value=endereco, disabled=True)
-st.text_input("CEP", value=cep, disabled=True)
+st.text_input("CNPJ/CPF", value=st.session_state.get("cnpj", ""), disabled=True)
+st.text_input("Endereço", value=st.session_state.get("endereco", ""), disabled=True)
+st.text_input("CEP", value=st.session_state.get("cep", ""), disabled=True)
 
 # --- Adicionar Insumo ---
-
-# Aplica reset visual dos campos se necessário
 if st.session_state.resetar_insumo:
     st.session_state.descricao = ""
     st.session_state.codigo = ""
@@ -85,10 +72,8 @@ if st.session_state.resetar_insumo:
 
 st.subheader("Adicionar Insumo")
 descricao = st.selectbox("Descrição do insumo", df_insumos["Descrição"].unique(), index=0, key="descricao")
-
 codigo = ""
 unidade = ""
-
 if descricao:
     dados_insumo = df_insumos[df_insumos["Descrição"] == descricao].iloc[0]
     codigo = dados_insumo["Código"]
@@ -102,7 +87,6 @@ unidade = st.text_input("Unidade", value=unidade, key="unidade")
 quantidade = st.number_input("Quantidade", min_value=0.0, format="%.2f", key="quantidade")
 complemento = st.text_area("Complemento", key="complemento")
 
-# --- Botão para adicionar insumo ---
 if st.button("➕ Adicionar insumo"):
     descricao_final = descricao if descricao else descricao_livre
     if descricao_final and unidade.strip() and quantidade > 0:
@@ -115,7 +99,6 @@ if st.button("➕ Adicionar insumo"):
         }
         st.session_state.insumos.append(novo_insumo)
         st.success("Insumo adicionado com sucesso!")
-
         resetar_campos_insumo()
         st.rerun()
     else:
@@ -174,12 +157,11 @@ if st.button("📤 Enviar Pedido"):
 
         nome_saida = f"pedido_{st.session_state.pedido_numero or 'sem_numero'}_{st.session_state.obra_selecionada}.xlsx"
         wb.save(nome_saida)
-        # Botão de download deve vir antes do reset e rerun
+        
         with open(nome_saida, "rb") as f:
             excel_bytes = f.read()
         
         st.success("✅ Pedido gerado com sucesso!")
-
         st.markdown("Clique abaixo para baixar o arquivo gerado:")
         st.download_button(
             label="📥 Baixar pedido em Excel",
@@ -188,7 +170,6 @@ if st.button("📤 Enviar Pedido"):
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
         
-        # Agora sim, após permitir o download, faz o reset
         resetar_formulario()
 
     except Exception as e:
