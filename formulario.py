@@ -3,7 +3,6 @@ from datetime import date
 from openpyxl import load_workbook
 import pandas as pd
 import os
-# import win32com.client as win32
 
 # --- Função para resetar campos dos insumos ---
 def resetar_campos_insumo():
@@ -26,19 +25,6 @@ if "resetar_insumo" not in st.session_state:
 # Inicializa o flag de reset para todos os campos
 if "resetar_pedido" not in st.session_state:
     st.session_state.resetar_pedido = False
-
-
-# --- Função para gerar PDF a partir do Excel ---
-# def salvar_pdf_do_excel(caminho_excel, nome_pdf_saida):
- #    excel = win32.gencache.EnsureDispatch("Excel.Application")
- #    wb = excel.Workbooks.Open(os.path.abspath(caminho_excel))
- #    ws = wb.Worksheets("Pedido")
- #    ws.PageSetup.Zoom = False
- #    ws.PageSetup.FitToPagesWide = 1
- #    ws.PageSetup.FitToPagesTall = False
- #    wb.ExportAsFixedFormat(0, os.path.abspath(nome_pdf_saida))
- #    wb.Close(SaveChanges=False)
- #    excel.Quit()
 
 # --- Carregar dados das planilhas ---
 df_empreend = pd.read_excel("Empreendimentos.xlsx")
@@ -101,6 +87,7 @@ descricao = st.selectbox("Descrição do insumo", df_insumos["Descrição"].uniq
 
 codigo = ""
 unidade = ""
+
 if descricao:
     dados_insumo = df_insumos[df_insumos["Descrição"] == descricao].iloc[0]
     codigo = dados_insumo["Código"]
@@ -141,7 +128,7 @@ if st.session_state.insumos:
                 st.session_state.insumos.pop(i)
                 st.rerun()
 
-# --- Botão final para gerar Excel + PDF ---
+# --- Botão final para gerar Excel ---
 if st.button("📤 Enviar Pedido"):
     try:
         caminho_modelo = "Modelo_Pedido.xlsx"
@@ -183,7 +170,6 @@ if st.button("📤 Enviar Pedido"):
         
         # Agora sim, após permitir o download, faz o reset
         resetar_formulario()
-        # st.rerun()
 
     except Exception as e:
         st.error(f"Erro ao gerar Excel: {e}")
