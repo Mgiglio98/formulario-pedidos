@@ -168,24 +168,23 @@ if st.button("📤 Enviar Pedido"):
 
         nome_saida = f"pedido_{st.session_state.pedido_numero or 'sem_numero'}.xlsx"
         wb.save(nome_saida)
-        st.success("Pedido gerado com sucesso!")
-
-        # PDF desabilitado no Streamlit Cloud por incompatibilidade
-        # nome_pdf = nome_saida.replace(".xlsx", ".pdf")
-        # salvar_pdf_do_excel(nome_saida, nome_pdf)
-        # st.success(f"PDF exportado: {nome_pdf}")
-
-        # Botão para download do Excel gerado
+        # Botão de download deve vir antes do reset e rerun
         with open(nome_saida, "rb") as f:
-            st.download_button(
-                label="📥 Baixar pedido em Excel",
-                data=f,
-                file_name=nome_saida,
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
-
+            excel_bytes = f.read()
+        
+        st.success("Pedido gerado com sucesso!")
+        
+        st.download_button(
+            label="📥 Baixar pedido em Excel",
+            data=excel_bytes,
+            file_name=nome_saida,
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        
+        # Agora sim, após permitir o download, faz o reset
         resetar_formulario()
         st.rerun()
+
 
     except Exception as e:
         st.error(f"Erro ao gerar Excel: {e}")
