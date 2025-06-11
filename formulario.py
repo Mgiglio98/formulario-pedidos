@@ -64,6 +64,7 @@ st.text_input("CEP", value=st.session_state.get("cep", ""), disabled=True)
 # --- Adicionar Insumo ---
 if st.session_state.resetar_insumo:
     st.session_state.descricao = ""
+    st.session_state.descricao_livre = ""
     st.session_state.codigo = ""
     st.session_state.unidade = ""
     st.session_state.quantidade = 0.0
