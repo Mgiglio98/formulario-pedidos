@@ -3,7 +3,7 @@ from datetime import date
 from openpyxl import load_workbook
 import pandas as pd
 import os
-import win32com.client as win32
+# import win32com.client as win32
 
 # --- Função para resetar campos dos insumos ---
 def resetar_campos_insumo():
@@ -29,16 +29,16 @@ if "resetar_pedido" not in st.session_state:
 
 
 # --- Função para gerar PDF a partir do Excel ---
-def salvar_pdf_do_excel(caminho_excel, nome_pdf_saida):
-    excel = win32.gencache.EnsureDispatch("Excel.Application")
-    wb = excel.Workbooks.Open(os.path.abspath(caminho_excel))
-    ws = wb.Worksheets("Pedido")
-    ws.PageSetup.Zoom = False
-    ws.PageSetup.FitToPagesWide = 1
-    ws.PageSetup.FitToPagesTall = False
-    wb.ExportAsFixedFormat(0, os.path.abspath(nome_pdf_saida))
-    wb.Close(SaveChanges=False)
-    excel.Quit()
+# def salvar_pdf_do_excel(caminho_excel, nome_pdf_saida):
+ #    excel = win32.gencache.EnsureDispatch("Excel.Application")
+ #    wb = excel.Workbooks.Open(os.path.abspath(caminho_excel))
+ #    ws = wb.Worksheets("Pedido")
+ #    ws.PageSetup.Zoom = False
+ #    ws.PageSetup.FitToPagesWide = 1
+ #    ws.PageSetup.FitToPagesTall = False
+ #    wb.ExportAsFixedFormat(0, os.path.abspath(nome_pdf_saida))
+ #    wb.Close(SaveChanges=False)
+ #    excel.Quit()
 
 # --- Carregar dados das planilhas ---
 df_empreend = pd.read_excel("Empreendimentos.xlsx")
@@ -170,9 +170,9 @@ if st.button("📤 Enviar Pedido"):
         wb.save(nome_saida)
         st.success(f"Pedido gerado com sucesso: {nome_saida}")
 
-        nome_pdf = nome_saida.replace(".xlsx", ".pdf")
-        salvar_pdf_do_excel(nome_saida, nome_pdf)
-        st.success(f"PDF exportado: {nome_pdf}")
+        # nome_pdf = nome_saida.replace(".xlsx", ".pdf")
+        # salvar_pdf_do_excel(nome_saida, nome_pdf)
+        # st.success(f"PDF exportado: {nome_pdf}")
 
         resetar_formulario()
         st.rerun()
