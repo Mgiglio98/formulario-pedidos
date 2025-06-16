@@ -15,7 +15,7 @@ def resetar_formulario():
 
 def registrar_historico(numero, obra, data):
     historico_path = "historico_pedidos.csv"
-    registro = {"numero": numero, "obra": obra, "data": data.strftime("%d/%m/%Y")}
+    registro = {"numero": numero, "obra": obra, "data": data.strftime("%Y-%m-%d")}
     df_hist = pd.DataFrame([registro])
     if os.path.exists(historico_path):
         df_antigo = pd.read_csv(historico_path)
@@ -110,12 +110,12 @@ with st.expander("📋 Dados do Pedido", expanded=True):
 
     col1, col2 = st.columns(2)
     with col1:
-        st.text_input("Pedido Nº", key="pedido_numero")
-        st.text_input("Solicitante", key="solicitante")
+        pedido_numero = st.text_input("Pedido Nº", key="pedido_numero")
+        solicitante = st.text_input("Solicitante", key="solicitante")
         obra_selecionada = st.selectbox("Obra", df_empreend["NOME"].unique(), index=0, key="obra_selecionada")
     with col2:
-        st.date_input("Data", value=st.session_state.get("data_pedido", date.today()), key="data_pedido")
-        st.text_input("Executivo", key="executivo")
+        data_pedido = st.date_input("Data", value=st.session_state.get("data_pedido", date.today()), key="data_pedido")
+        executivo = st.text_input("Executivo", key="executivo")
 
     if obra_selecionada:
         dados_obra = df_empreend[df_empreend["NOME"] == obra_selecionada].iloc[0]
@@ -134,14 +134,8 @@ with st.expander("➕ Adicionar Insumo", expanded=True):
 
 if st.session_state.insumos:
     st.subheader("📦 Insumos adicionados")
-    for i, insumo in enumerate(st.session_state.insumos):
-        col1, col2 = st.columns([6, 1])
-        with col1:
-            st.markdown(f"**{i+1}.** {insumo['descricao']} ({insumo['quantidade']} {insumo['unidade']})")
-        with col2:
-            if st.button("🗑️", key=f"delete_{i}"):
-                st.session_state.insumos.pop(i)
-                st.rerun()
+    df_insumos_adicionados = pd.DataFrame(st.session_state.insumos)
+    st.dataframe(df_insumos_adicionados)
 
 if st.button("📤 Enviar Pedido"):
     campos_obrigatorios = [
@@ -203,6 +197,15 @@ if st.checkbox("📖 Ver histórico de pedidos"):
     historico_path = "historico_pedidos.csv"
     if os.path.exists(historico_path):
         df = pd.read_csv(historico_path)
+        df["data"] = pd.to_datetime(df["data"])
+        obra_filtro = st.selectbox("Filtrar por obra", ["Todas"] + sorted(df["obra"].unique()))
+        mes_filtro = st.selectbox("Filtrar por mês", ["Todos"] + sorted(df["data"].dt.strftime("%Y-%m").unique()))
+
+        if obra_filtro != "Todas":
+            df = df[df["obra"] == obra_filtro]
+        if mes_filtro != "Todos":
+            df = df[df["data"].dt.strftime("%Y-%m") == mes_filtro]
+
         st.table(df[["numero", "obra", "data"]])
     else:
         st.info("Nenhum pedido registrado ainda.")
