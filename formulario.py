@@ -132,7 +132,7 @@ st.divider()
 with st.expander("➕ Adicionar Insumo", expanded=True):
     adicionar_insumo(df_insumos)
 
- Inicializa o índice de edição se não existir
+# Inicializa o índice de edição se não existir
 if "editar_index" not in st.session_state:
     st.session_state.editar_index = None
 
