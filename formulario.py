@@ -23,16 +23,34 @@ def resetar_formulario():
 
 def registrar_historico(numero, obra, data):
     historico_path = "historico_pedidos.csv"
-    registro = {"numero": numero, "obra": obra, "data": data.strftime("%Y-%m-%d")}
-    df_hist = pd.DataFrame([registro])
-    try:
-        if os.path.exists(historico_path):
+    novo_registro = {
+        "numero": numero,
+        "obra": obra,
+        "data": data.strftime("%Y-%m-%d")
+    }
+    df_novo = pd.DataFrame([novo_registro])
+    if os.path.exists(historico_path):
+        try:
             df_antigo = pd.read_csv(historico_path)
-            df_hist = pd.concat([df_antigo, df_hist], ignore_index=True)
-        df_hist.to_csv(historico_path, index=False)
-        st.success(f"📌 Histórico atualizado com: {registro}")  # DEBUG VISUAL
+            # Verifica se já existe esse número de pedido
+            existe = (
+                (df_antigo["numero"].astype(str) == str(numero)) &
+                (df_antigo["obra"] == obra)
+            ).any()
+            if not existe:
+                df_resultado = pd.concat([df_antigo, df_novo], ignore_index=True)
+            else:
+                df_resultado = df_antigo  # Não duplica
+        except Exception as e:
+            st.error(f"Erro ao ler histórico existente: {e}")
+            df_resultado = df_novo
+    else:
+        df_resultado = df_novo
+    try:
+        df_resultado.to_csv(historico_path, index=False)
+        st.success(f"📌 Histórico atualizado com: {novo_registro}")
     except Exception as e:
-        st.error(f"Erro ao registrar histórico: {e}")
+        st.error(f"Erro ao gravar histórico: {e}")
 
 def carregar_dados():
     df_empreend = pd.read_excel("Empreendimentos.xlsx")
