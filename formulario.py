@@ -42,7 +42,7 @@ def adicionar_insumo(df_insumos):
         st.session_state.complemento = ""
         st.session_state.resetar_insumo = False
 
-    descricao = st.selectbox("Descrição do insumo", df_insumos["Descrição"].unique(), key="descricao")
+    descricao = st.selectbox("Descrição do insumo", df_insumos["Descrição"].unique(), key="descricao", index=df_insumos["Descrição"].tolist().index(descricao_editar) if descricao_editar in df_insumos["Descrição"].tolist() else 0)
     codigo = ""
     unidade = ""
     if descricao:
@@ -132,41 +132,29 @@ st.divider()
 with st.expander("➕ Adicionar Insumo", expanded=True):
     adicionar_insumo(df_insumos)
 
-# Inicializa o índice de edição se não existir
-if "editar_index" not in st.session_state:
-    st.session_state.editar_index = None
-
-# Renderização da lista com opções de editar/excluir
-if st.session_state.insumos:
-    st.subheader("📦 Insumos adicionados")
-    for i, insumo in enumerate(st.session_state.insumos):
-        cols = st.columns([6, 1, 1])
-        with cols[0]:
-            st.markdown(f"**{i+1}.** {insumo['descricao']} — {insumo['quantidade']} {insumo['unidade']}")
-        with cols[1]:
-            if st.button("✏️ Editar", key=f"edit_{i}"):
-                st.session_state.editar_index = i
-                st.rerun()
-        with cols[2]:
-            if st.button("🗑️", key=f"delete_{i}"):
-                st.session_state.insumos.pop(i)
-                st.rerun()
-
-# Se estiver em modo de edição, preencher os campos ANTES da criação dos widgets
+# Se estiver em modo de edição, preencher variáveis antes dos widgets
 if st.session_state.editar_index is not None:
     editar = st.session_state.insumos[st.session_state.editar_index]
-    st.session_state.update({
-        "resetar_insumo": False,
-        "descricao": editar["descricao"],
-        "descricao_livre": "",
-        "codigo": editar["codigo"],
-        "unidade": editar["unidade"],
-        "quantidade": editar["quantidade"],
-        "complemento": editar["complemento"]
-    })
+    
+    # Define variáveis auxiliares que serão passadas como default nos widgets
+    descricao_editar = editar["descricao"]
+    descricao_livre_editar = ""
+    codigo_editar = editar["codigo"]
+    unidade_editar = editar["unidade"]
+    quantidade_editar = editar["quantidade"]
+    complemento_editar = editar["complemento"]
+
+    # Remove o item antigo para que a nova inserção o substitua
     st.session_state.insumos.pop(st.session_state.editar_index)
     st.session_state.editar_index = None
-    st.rerun()
+else:
+    # Defaults em caso de novo item
+    descricao_editar = ""
+    descricao_livre_editar = ""
+    codigo_editar = ""
+    unidade_editar = ""
+    quantidade_editar = 0.0
+    complemento_editar = ""
 
 if st.button("📤 Enviar Pedido"):
     campos_obrigatorios = [
