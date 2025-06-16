@@ -193,7 +193,11 @@ if st.button("📤 Enviar Pedido"):
 
         st.info("Para gerar um PDF, abra o arquivo no Excel e use a opção 'Salvar como PDF'.")
 
-        registrar_historico(st.session_state.pedido_numero, st.session_state.obra_selecionada, st.session_state.data_pedido)
+        numero = st.session_state.pedido_numero
+        obra = st.session_state.obra_selecionada
+        data_pedido = st.session_state.data_pedido
+        
+        registrar_historico(numero, obra, data_pedido)
         resetar_formulario()
 
     except Exception as e:
