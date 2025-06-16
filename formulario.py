@@ -42,9 +42,7 @@ def adicionar_insumo(df_insumos):
         st.session_state.complemento = ""
         st.session_state.resetar_insumo = False
 
-    descricao_input = st.text_input("🔍 Buscar descrição do insumo", key="descricao")
-    opcoes_filtradas = df_insumos[df_insumos["Descrição"].str.contains(descricao_input, case=False, na=False)]
-    descricao = st.selectbox("Descrição encontrada", opcoes_filtradas["Descrição"].unique())
+    descricao = st.selectbox("Descrição do insumo", df_insumos["Descrição"].unique(), key="descricao")
     codigo = ""
     unidade = ""
     if descricao:
@@ -88,9 +86,9 @@ if "resetar_pedido" not in st.session_state:
 df_empreend, df_insumos = carregar_dados()
 
 # --- Logo e título ---
+st.image("logo.png", width=300)
 st.markdown("""
     <div style='text-align: center;'>
-        <img src='logo.png' width='300'>
         <h2 style='color: #003366;'>Sistema de Pedidos de Materiais</h2>
         <p style='font-size: 14px; color: #555;'>Preencha os campos com atenção. Evite abreviações desnecessárias.<br>
         Para pedidos novos, utilize sempre códigos oficiais quando disponíveis.</p>
@@ -114,10 +112,10 @@ with st.expander("📋 Dados do Pedido", expanded=True):
     with col1:
         st.text_input("Pedido Nº", key="pedido_numero")
         st.text_input("Solicitante", key="solicitante")
-        st.text_input("Executivo", key="executivo")
+        obra_selecionada = st.selectbox("Obra", df_empreend["NOME"].unique(), index=0, key="obra_selecionada")
     with col2:
         st.date_input("Data", value=st.session_state.get("data_pedido", date.today()), key="data_pedido")
-        obra_selecionada = st.selectbox("Obra", df_empreend["NOME"].unique(), index=0, key="obra_selecionada")
+        st.text_input("Executivo", key="executivo")
 
     if obra_selecionada:
         dados_obra = df_empreend[df_empreend["NOME"] == obra_selecionada].iloc[0]
