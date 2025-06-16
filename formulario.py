@@ -2,7 +2,6 @@ import streamlit as st
 from datetime import date
 from openpyxl import load_workbook
 import pandas as pd
-from fpdf import FPDF
 import os
 
 # --- Funções auxiliares ---
@@ -13,26 +12,6 @@ def resetar_formulario():
     st.session_state.resetar_pedido = True
     resetar_campos_insumo()
     st.session_state.insumos = []
-
-def gerar_pdf(pedido):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-
-    pdf.cell(200, 10, txt=f"Pedido Nº {pedido['numero']}", ln=True)
-    pdf.cell(200, 10, txt=f"Obra: {pedido['obra']}", ln=True)
-    pdf.cell(200, 10, txt=f"Data: {pedido['data']}", ln=True)
-
-    pdf.ln(10)
-    pdf.cell(200, 10, txt="Insumos:", ln=True)
-
-    for insumo in pedido["insumos"]:
-        linha = f"{insumo['descricao']} - {insumo['quantidade']} {insumo['unidade']}"
-        pdf.cell(200, 10, txt=linha, ln=True)
-
-    caminho_pdf = f"pedido_{pedido['numero']}.pdf"
-    pdf.output(caminho_pdf)
-    return caminho_pdf
 
 def registrar_historico(numero, obra, data):
     historico_path = "historico_pedidos.csv"
@@ -195,17 +174,7 @@ if st.button("📤 Enviar Pedido"):
         st.success("✅ Pedido gerado com sucesso!")
         st.download_button("📥 Baixar Excel", data=excel_bytes, file_name=nome_saida)
 
-        caminho_pdf = gerar_pdf({
-            "numero": st.session_state.pedido_numero,
-            "obra": st.session_state.obra_selecionada,
-            "data": st.session_state.data_pedido,
-            "insumos": st.session_state.insumos
-        })
-
-        with open(caminho_pdf, "rb") as f:
-            pdf_bytes = f.read()
-
-        st.download_button("📄 Baixar PDF", data=pdf_bytes, file_name=caminho_pdf)
+        st.info("Para gerar um PDF, abra o arquivo no Excel e use a opção 'Salvar como PDF'.")
 
         registrar_historico(st.session_state.pedido_numero, st.session_state.obra_selecionada, st.session_state.data_pedido)
         resetar_formulario()
