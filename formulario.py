@@ -22,35 +22,41 @@ def resetar_formulario():
     st.session_state.insumos = []
 
 def registrar_historico(numero, obra, data):
+    import csv
+
     historico_path = "historico_pedidos.csv"
-    novo_registro = {
-        "numero": numero,
-        "obra": obra,
-        "data": data.strftime("%Y-%m-%d")
-    }
-    df_novo = pd.DataFrame([novo_registro])
-    if os.path.exists(historico_path):
-        try:
-            df_antigo = pd.read_csv(historico_path)
-            # Verifica se já existe esse número de pedido
-            existe = (
-                (df_antigo["numero"].astype(str) == str(numero)) &
-                (df_antigo["obra"] == obra)
-            ).any()
-            if not existe:
-                df_resultado = pd.concat([df_antigo, df_novo], ignore_index=True)
-            else:
-                df_resultado = df_antigo  # Não duplica
-        except Exception as e:
-            st.error(f"Erro ao ler histórico existente: {e}")
-            df_resultado = df_novo
+    registro = [numero, obra, data.strftime("%Y-%m-%d")]
+
+    # Cria o arquivo com cabeçalho se não existir
+    if not os.path.exists(historico_path):
+        with open(historico_path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["numero", "obra", "data"])
+            writer.writerow(registro)
+        st.success(f"📌 Histórico criado com: {registro}")
+        return
+
+    # Verifica se o número já está no histórico
+    ja_existente = False
+    linhas_existentes = []
+    with open(historico_path, "r", encoding="utf-8") as f:
+        reader = csv.reader(f)
+        for i, row in enumerate(reader):
+            if i == 0:
+                linhas_existentes.append(row)  # cabeçalho
+                continue
+            if row[0] == str(numero) and row[1] == obra:
+                ja_existente = True
+            linhas_existentes.append(row)
+
+    if not ja_existente:
+        linhas_existentes.append([str(numero), obra, data.strftime("%Y-%m-%d")])
+        with open(historico_path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerows(linhas_existentes)
+        st.success(f"📌 Pedido {numero} adicionado ao histórico.")
     else:
-        df_resultado = df_novo
-    try:
-        df_resultado.to_csv(historico_path, index=False)
-        st.success(f"📌 Histórico atualizado com: {novo_registro}")
-    except Exception as e:
-        st.error(f"Erro ao gravar histórico: {e}")
+        st.warning(f"ℹ️ Pedido {numero} já estava no histórico.")
 
 def carregar_dados():
     df_empreend = pd.read_excel("Empreendimentos.xlsx")
