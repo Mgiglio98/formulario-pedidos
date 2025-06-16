@@ -25,10 +25,14 @@ def registrar_historico(numero, obra, data):
     historico_path = "historico_pedidos.csv"
     registro = {"numero": numero, "obra": obra, "data": data.strftime("%Y-%m-%d")}
     df_hist = pd.DataFrame([registro])
-    if os.path.exists(historico_path):
-        df_antigo = pd.read_csv(historico_path)
-        df_hist = pd.concat([df_antigo, df_hist], ignore_index=True)
-    df_hist.to_csv(historico_path, index=False)
+    try:
+        if os.path.exists(historico_path):
+            df_antigo = pd.read_csv(historico_path)
+            df_hist = pd.concat([df_antigo, df_hist], ignore_index=True)
+        df_hist.to_csv(historico_path, index=False)
+        st.success(f"📌 Histórico atualizado com: {registro}")  # DEBUG VISUAL
+    except Exception as e:
+        st.error(f"Erro ao registrar histórico: {e}")
 
 def carregar_dados():
     df_empreend = pd.read_excel("Empreendimentos.xlsx")
