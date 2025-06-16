@@ -134,8 +134,23 @@ with st.expander("➕ Adicionar Insumo", expanded=True):
 
 if st.session_state.insumos:
     st.subheader("📦 Insumos adicionados")
-    df_insumos_adicionados = pd.DataFrame(st.session_state.insumos)
-    st.dataframe(df_insumos_adicionados)
+    for i, insumo in enumerate(st.session_state.insumos):
+        cols = st.columns([4, 1])
+        with cols[0]:
+            st.markdown(f"**{i+1}.** {insumo['descricao']} — {insumo['quantidade']} {insumo['unidade']}")
+        with cols[1]:
+            if st.button("✏️", key=f"edit_{i}"):
+                st.session_state.descricao = insumo["descricao"]
+                st.session_state.descricao_livre = ""
+                st.session_state.codigo = insumo["codigo"]
+                st.session_state.unidade = insumo["unidade"]
+                st.session_state.quantidade = insumo["quantidade"]
+                st.session_state.complemento = insumo["complemento"]
+                st.session_state.insumos.pop(i)
+                st.rerun()
+            if st.button("🗑️", key=f"delete_{i}"):
+                st.session_state.insumos.pop(i)
+                st.rerun()
 
 if st.button("📤 Enviar Pedido"):
     campos_obrigatorios = [
