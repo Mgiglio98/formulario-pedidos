@@ -22,59 +22,17 @@ def registrar_historico(numero, obra, data):
         df_hist = pd.concat([df_antigo, df_hist], ignore_index=True)
     df_hist.to_csv(historico_path, index=False)
 
-# --- Inicializações ---
-if "insumos" not in st.session_state:
-    st.session_state.insumos = []
-if "resetar_insumo" not in st.session_state:
-    st.session_state.resetar_insumo = False
-if "resetar_pedido" not in st.session_state:
-    st.session_state.resetar_pedido = False
+def carregar_dados():
+    df_empreend = pd.read_excel("Empreendimentos.xlsx")
+    df_insumos = pd.read_excel("Insumos.xlsx")
+    df_empreend.loc[-1] = ["", "", "", ""]
+    df_empreend.index = df_empreend.index + 1
+    df_empreend = df_empreend.sort_index()
+    insumos_vazios = pd.DataFrame({"Código": [""], "Descrição": [""], "Unidade": [""]})
+    df_insumos = pd.concat([insumos_vazios, df_insumos], ignore_index=True)
+    return df_empreend, df_insumos
 
-# --- Carregar dados ---
-df_empreend = pd.read_excel("Empreendimentos.xlsx")
-df_insumos = pd.read_excel("Insumos.xlsx")
-df_empreend.loc[-1] = ["", "", "", ""]
-df_empreend.index = df_empreend.index + 1
-df_empreend = df_empreend.sort_index()
-
-insumos_vazios = pd.DataFrame({"Código": [""], "Descrição": [""], "Unidade": [""]})
-df_insumos = pd.concat([insumos_vazios, df_insumos], ignore_index=True)
-
-# --- Logo e título ---
-st.image("logo.png", width=250)
-st.markdown("## Sistema de Pedidos de Materiais")
-
-with st.expander("📋 Dados do Pedido", expanded=True):
-    if st.session_state.resetar_pedido:
-        st.session_state.pedido_numero = ""
-        st.session_state.data_pedido = date.today()
-        st.session_state.solicitante = ""
-        st.session_state.executivo = ""
-        st.session_state.obra_selecionada = ""
-        st.session_state.cnpj = ""
-        st.session_state.endereco = ""
-        st.session_state.cep = ""
-        st.session_state.resetar_pedido = False
-
-    pedido_numero = st.text_input("Pedido Nº", key="pedido_numero")
-    data_pedido = st.date_input("Data", value=st.session_state.get("data_pedido", date.today()), key="data_pedido")
-    solicitante = st.text_input("Solicitante", key="solicitante")
-    executivo = st.text_input("Executivo", key="executivo")
-    obra_selecionada = st.selectbox("Obra", df_empreend["NOME"].unique(), index=0, key="obra_selecionada")
-
-    if obra_selecionada:
-        dados_obra = df_empreend[df_empreend["NOME"] == obra_selecionada].iloc[0]
-        st.session_state["cnpj"] = dados_obra["EMPRD_CNPJFAT"]
-        st.session_state["endereco"] = dados_obra["ENDEREÇO"]
-        st.session_state["cep"] = dados_obra["Cep"]
-
-    st.text_input("CNPJ/CPF", value=st.session_state.get("cnpj", ""), disabled=True)
-    st.text_input("Endereço", value=st.session_state.get("endereco", ""), disabled=True)
-    st.text_input("CEP", value=st.session_state.get("cep", ""), disabled=True)
-
-st.divider()
-
-with st.expander("➕ Adicionar Insumo", expanded=True):
+def adicionar_insumo(df_insumos):
     if st.session_state.resetar_insumo:
         st.session_state.descricao = ""
         st.session_state.descricao_livre = ""
@@ -84,7 +42,9 @@ with st.expander("➕ Adicionar Insumo", expanded=True):
         st.session_state.complemento = ""
         st.session_state.resetar_insumo = False
 
-    descricao = st.selectbox("Descrição do insumo", df_insumos["Descrição"].unique(), index=0, key="descricao")
+    descricao_input = st.text_input("🔍 Buscar descrição do insumo", key="descricao")
+    opcoes_filtradas = df_insumos[df_insumos["Descrição"].str.contains(descricao_input, case=False, na=False)]
+    descricao = st.selectbox("Descrição encontrada", opcoes_filtradas["Descrição"].unique())
     codigo = ""
     unidade = ""
     if descricao:
@@ -115,6 +75,64 @@ with st.expander("➕ Adicionar Insumo", expanded=True):
             st.rerun()
         else:
             st.warning("Preencha todos os campos obrigatórios do insumo.")
+
+# --- Inicializações ---
+if "insumos" not in st.session_state:
+    st.session_state.insumos = []
+if "resetar_insumo" not in st.session_state:
+    st.session_state.resetar_insumo = False
+if "resetar_pedido" not in st.session_state:
+    st.session_state.resetar_pedido = False
+
+# --- Carregar dados ---
+df_empreend, df_insumos = carregar_dados()
+
+# --- Logo e título ---
+st.markdown("""
+    <div style='text-align: center;'>
+        <img src='logo.png' width='300'>
+        <h2 style='color: #003366;'>Sistema de Pedidos de Materiais</h2>
+        <p style='font-size: 14px; color: #555;'>Preencha os campos com atenção. Evite abreviações desnecessárias.<br>
+        Para pedidos novos, utilize sempre códigos oficiais quando disponíveis.</p>
+    </div>
+""", unsafe_allow_html=True)
+
+# --- Formulário ---
+with st.expander("📋 Dados do Pedido", expanded=True):
+    if st.session_state.resetar_pedido:
+        st.session_state.pedido_numero = ""
+        st.session_state.data_pedido = date.today()
+        st.session_state.solicitante = ""
+        st.session_state.executivo = ""
+        st.session_state.obra_selecionada = ""
+        st.session_state.cnpj = ""
+        st.session_state.endereco = ""
+        st.session_state.cep = ""
+        st.session_state.resetar_pedido = False
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.text_input("Pedido Nº", key="pedido_numero")
+        st.text_input("Solicitante", key="solicitante")
+        st.text_input("Executivo", key="executivo")
+    with col2:
+        st.date_input("Data", value=st.session_state.get("data_pedido", date.today()), key="data_pedido")
+        obra_selecionada = st.selectbox("Obra", df_empreend["NOME"].unique(), index=0, key="obra_selecionada")
+
+    if obra_selecionada:
+        dados_obra = df_empreend[df_empreend["NOME"] == obra_selecionada].iloc[0]
+        st.session_state["cnpj"] = dados_obra["EMPRD_CNPJFAT"]
+        st.session_state["endereco"] = dados_obra["ENDEREÇO"]
+        st.session_state["cep"] = dados_obra["Cep"]
+
+    st.text_input("CNPJ/CPF", value=st.session_state.get("cnpj", ""), disabled=True)
+    st.text_input("Endereço", value=st.session_state.get("endereco", ""), disabled=True)
+    st.text_input("CEP", value=st.session_state.get("cep", ""), disabled=True)
+
+st.divider()
+
+with st.expander("➕ Adicionar Insumo", expanded=True):
+    adicionar_insumo(df_insumos)
 
 if st.session_state.insumos:
     st.subheader("📦 Insumos adicionados")
