@@ -22,35 +22,20 @@ def resetar_formulario():
     st.session_state.insumos = []
 
 def registrar_historico(numero, obra, data):
-    import csv
     historico_path = "historico_pedidos.csv"
-    registro = [str(numero), str(obra), data.strftime("%Y-%m-%d")]
-    if not os.path.exists(historico_path):
-        with open(historico_path, "w", newline="", encoding="utf-8") as f:
-            writer = csv.writer(f)
-            writer.writerow(["numero", "obra", "data"])
-            writer.writerow(registro)
-        st.success(f"📌 Histórico criado com: {registro}")
-        return
-    ja_existente = False
-    linhas_existentes = []
-    with open(historico_path, "r", encoding="utf-8") as f:
-        reader = csv.reader(f)
-        for i, row in enumerate(reader):
-            if i == 0:
-                linhas_existentes.append(row)
-                continue
-            if row[0] == str(numero) and row[1] == str(obra):
-                ja_existente = True
-            linhas_existentes.append(row)
-    if not ja_existente:
-        linhas_existentes.append(registro)
-        with open(historico_path, "w", newline="", encoding="utf-8") as f:
-            writer = csv.writer(f)
-            writer.writerows(linhas_existentes)
-        st.success(f"📌 Pedido {numero} adicionado ao histórico.")
+    registro = {"numero": str(numero).strip(), "obra": str(obra).strip(), "data": data.strftime("%Y-%m-%d")}
+    if os.path.exists(historico_path):
+        df_hist = pd.read_csv(historico_path, dtype=str)
+        if not ((df_hist["numero"] == registro["numero"]) & (df_hist["obra"] == registro["obra"])).any():
+            df_hist = pd.concat([df_hist, pd.DataFrame([registro])], ignore_index=True)
+            df_hist.to_csv(historico_path, index=False, encoding="utf-8")
+            st.success(f"📌 Pedido {numero} adicionado ao histórico.")
+        else:
+            st.warning(f"ℹ️ Pedido {numero} já está no histórico.")
     else:
-        st.warning(f"ℹ️ Pedido {numero} já está no histórico.")
+        df_hist = pd.DataFrame([registro])
+        df_hist.to_csv(historico_path, index=False, encoding="utf-8")
+        st.success(f"📌 Histórico criado com o pedido {numero}.")
 
 def carregar_dados():
     df_empreend = pd.read_excel("Empreendimentos.xlsx")
