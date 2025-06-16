@@ -4,9 +4,19 @@ from openpyxl import load_workbook
 import pandas as pd
 import os
 
+# --- Inicializações de sessão ---
+if "insumos" not in st.session_state:
+    st.session_state.insumos = []
+if "resetar_insumo" not in st.session_state:
+    st.session_state.resetar_insumo = False
+if "resetar_pedido" not in st.session_state:
+    st.session_state.resetar_pedido = False
+if "editar_index" not in st.session_state:
+    st.session_state.editar_index = None
+
 # --- Funções auxiliares ---
 def resetar_campos_insumo():
-    st.session_state["resetar_insumo"] = True
+    st.session_state.resetar_insumo = True
 
 def resetar_formulario():
     st.session_state.resetar_pedido = True
@@ -32,57 +42,7 @@ def carregar_dados():
     df_insumos = pd.concat([insumos_vazios, df_insumos], ignore_index=True)
     return df_empreend, df_insumos
 
-def adicionar_insumo(df_insumos):
-    if st.session_state.resetar_insumo:
-        st.session_state.descricao = ""
-        st.session_state.descricao_livre = ""
-        st.session_state.codigo = ""
-        st.session_state.unidade = ""
-        st.session_state.quantidade = 0.0
-        st.session_state.complemento = ""
-        st.session_state.resetar_insumo = False
-
-    descricao = st.selectbox("Descrição do insumo", df_insumos["Descrição"].unique(), key="descricao", index=df_insumos["Descrição"].tolist().index(descricao_editar) if descricao_editar in df_insumos["Descrição"].tolist() else 0)
-    codigo = ""
-    unidade = ""
-    if descricao:
-        dados_insumo = df_insumos[df_insumos["Descrição"] == descricao].iloc[0]
-        codigo = dados_insumo["Código"]
-        unidade = dados_insumo["Unidade"]
-
-    st.write("Ou preencha manualmente se não estiver listado:")
-    descricao_livre = st.text_input("Nome do insumo (livre)", key="descricao_livre")
-    st.text_input("Código do insumo", value=codigo, disabled=True)
-    unidade = st.text_input("Unidade", value=unidade, key="unidade")
-    quantidade = st.number_input("Quantidade", min_value=0.0, format="%.2f", key="quantidade")
-    complemento = st.text_area("Complemento", key="complemento")
-
-    if st.button("➕ Adicionar insumo"):
-        descricao_final = descricao if descricao else descricao_livre
-        if descricao_final and unidade.strip() and quantidade > 0:
-            novo_insumo = {
-                "descricao": descricao_final,
-                "codigo": codigo,
-                "unidade": unidade,
-                "quantidade": quantidade,
-                "complemento": complemento,
-            }
-            st.session_state.insumos.append(novo_insumo)
-            st.success("Insumo adicionado com sucesso!")
-            resetar_campos_insumo()
-            st.rerun()
-        else:
-            st.warning("Preencha todos os campos obrigatórios do insumo.")
-
-# --- Inicializações ---
-if "insumos" not in st.session_state:
-    st.session_state.insumos = []
-if "resetar_insumo" not in st.session_state:
-    st.session_state.resetar_insumo = False
-if "resetar_pedido" not in st.session_state:
-    st.session_state.resetar_pedido = False
-
-# --- Carregar dados ---
+# --- Carrega dados ---
 df_empreend, df_insumos = carregar_dados()
 
 # --- Logo e título ---
@@ -95,7 +55,7 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# --- Formulário ---
+# --- Dados do Pedido ---
 with st.expander("📋 Dados do Pedido", expanded=True):
     if st.session_state.resetar_pedido:
         st.session_state.pedido_numero = ""
@@ -119,9 +79,9 @@ with st.expander("📋 Dados do Pedido", expanded=True):
 
     if obra_selecionada:
         dados_obra = df_empreend[df_empreend["NOME"] == obra_selecionada].iloc[0]
-        st.session_state["cnpj"] = dados_obra["EMPRD_CNPJFAT"]
-        st.session_state["endereco"] = dados_obra["ENDEREÇO"]
-        st.session_state["cep"] = dados_obra["Cep"]
+        st.session_state.cnpj = dados_obra["EMPRD_CNPJFAT"]
+        st.session_state.endereco = dados_obra["ENDEREÇO"]
+        st.session_state.cep = dados_obra["Cep"]
 
     st.text_input("CNPJ/CPF", value=st.session_state.get("cnpj", ""), disabled=True)
     st.text_input("Endereço", value=st.session_state.get("endereco", ""), disabled=True)
@@ -129,14 +89,7 @@ with st.expander("📋 Dados do Pedido", expanded=True):
 
 st.divider()
 
-with st.expander("➕ Adicionar Insumo", expanded=True):
-    adicionar_insumo(df_insumos)
-
-# Inicializa o índice de edição se não existir
-if "editar_index" not in st.session_state:
-    st.session_state.editar_index = None
-
-# Inicializa variáveis auxiliares para edição de insumos
+# --- Inicializa variáveis auxiliares para edição ---
 descricao_editar = ""
 descricao_livre_editar = ""
 codigo_editar = ""
@@ -144,20 +97,17 @@ unidade_editar = ""
 quantidade_editar = 0.0
 complemento_editar = ""
 
-# Se estiver em modo de edição, carrega os dados antes dos widgets
 if st.session_state.editar_index is not None:
     editar = st.session_state.insumos[st.session_state.editar_index]
     descricao_editar = editar["descricao"]
-    descricao_livre_editar = ""
     codigo_editar = editar["codigo"]
     unidade_editar = editar["unidade"]
     quantidade_editar = editar["quantidade"]
     complemento_editar = editar["complemento"]
-
     st.session_state.insumos.pop(st.session_state.editar_index)
     st.session_state.editar_index = None
 
-# Formulário de insumo
+# --- Formulário de Insumo ---
 st.markdown("### ➕ Adicionar ou Editar Insumo")
 
 descricao = st.selectbox(
@@ -192,7 +142,7 @@ if st.button("➕ Adicionar insumo"):
     else:
         st.warning("Preencha todos os campos obrigatórios do insumo.")
 
-# Renderização da lista com opções de editar/excluir
+# --- Renderiza tabela de insumos ---
 if st.session_state.insumos:
     st.subheader("📦 Insumos adicionados")
     for i, insumo in enumerate(st.session_state.insumos):
@@ -208,6 +158,7 @@ if st.session_state.insumos:
                 st.session_state.insumos.pop(i)
                 st.rerun()
 
+# --- Finalização do Pedido ---
 if st.button("📤 Enviar Pedido"):
     campos_obrigatorios = [
         st.session_state.pedido_numero,
@@ -223,6 +174,7 @@ if st.button("📤 Enviar Pedido"):
     if not all(campos_obrigatorios):
         st.warning("⚠️ Preencha todos os campos obrigatórios antes de enviar o pedido.")
         st.stop()
+
     try:
         caminho_modelo = "Modelo_Pedido.xlsx"
         wb = load_workbook(caminho_modelo)
