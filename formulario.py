@@ -132,11 +132,21 @@ st.divider()
 with st.expander("➕ Adicionar Insumo", expanded=True):
     adicionar_insumo(df_insumos)
 
-# Se estiver em modo de edição, preencher variáveis antes dos widgets
+# Inicializa o índice de edição se não existir
+if "editar_index" not in st.session_state:
+    st.session_state.editar_index = None
+
+# Inicializa variáveis auxiliares para edição de insumos
+descricao_editar = ""
+descricao_livre_editar = ""
+codigo_editar = ""
+unidade_editar = ""
+quantidade_editar = 0.0
+complemento_editar = ""
+
+# Se estiver em modo de edição, carrega os dados antes dos widgets
 if st.session_state.editar_index is not None:
     editar = st.session_state.insumos[st.session_state.editar_index]
-    
-    # Define variáveis auxiliares que serão passadas como default nos widgets
     descricao_editar = editar["descricao"]
     descricao_livre_editar = ""
     codigo_editar = editar["codigo"]
@@ -144,17 +154,59 @@ if st.session_state.editar_index is not None:
     quantidade_editar = editar["quantidade"]
     complemento_editar = editar["complemento"]
 
-    # Remove o item antigo para que a nova inserção o substitua
     st.session_state.insumos.pop(st.session_state.editar_index)
     st.session_state.editar_index = None
-else:
-    # Defaults em caso de novo item
-    descricao_editar = ""
-    descricao_livre_editar = ""
-    codigo_editar = ""
-    unidade_editar = ""
-    quantidade_editar = 0.0
-    complemento_editar = ""
+
+# Formulário de insumo
+st.markdown("### ➕ Adicionar ou Editar Insumo")
+
+descricao = st.selectbox(
+    "Descrição do insumo",
+    df_insumos["Descrição"].unique(),
+    key="descricao",
+    index=df_insumos["Descrição"].tolist().index(descricao_editar)
+    if descricao_editar in df_insumos["Descrição"].tolist() else 0
+)
+
+st.write("Ou preencha manualmente se não estiver listado:")
+descricao_livre = st.text_input("Nome do insumo (livre)", key="descricao_livre", value=descricao_livre_editar)
+st.text_input("Código do insumo", value=codigo_editar, disabled=True)
+unidade = st.text_input("Unidade", key="unidade", value=unidade_editar)
+quantidade = st.number_input("Quantidade", min_value=0.0, format="%.2f", key="quantidade", value=quantidade_editar)
+complemento = st.text_area("Complemento", key="complemento", value=complemento_editar)
+
+if st.button("➕ Adicionar insumo"):
+    descricao_final = descricao if descricao else descricao_livre
+    if descricao_final and unidade.strip() and quantidade > 0:
+        novo_insumo = {
+            "descricao": descricao_final,
+            "codigo": codigo_editar,
+            "unidade": unidade,
+            "quantidade": quantidade,
+            "complemento": complemento,
+        }
+        st.session_state.insumos.append(novo_insumo)
+        st.success("Insumo adicionado com sucesso!")
+        resetar_campos_insumo()
+        st.rerun()
+    else:
+        st.warning("Preencha todos os campos obrigatórios do insumo.")
+
+# Renderização da lista com opções de editar/excluir
+if st.session_state.insumos:
+    st.subheader("📦 Insumos adicionados")
+    for i, insumo in enumerate(st.session_state.insumos):
+        cols = st.columns([6, 1, 1])
+        with cols[0]:
+            st.markdown(f"**{i+1}.** {insumo['descricao']} — {insumo['quantidade']} {insumo['unidade']}")
+        with cols[1]:
+            if st.button("✏️ Editar", key=f"edit_{i}"):
+                st.session_state.editar_index = i
+                st.rerun()
+        with cols[2]:
+            if st.button("🗑️", key=f"delete_{i}"):
+                st.session_state.insumos.pop(i)
+                st.rerun()
 
 if st.button("📤 Enviar Pedido"):
     campos_obrigatorios = [
