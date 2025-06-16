@@ -11,8 +11,6 @@ if "resetar_insumo" not in st.session_state:
     st.session_state.resetar_insumo = False
 if "resetar_pedido" not in st.session_state:
     st.session_state.resetar_pedido = False
-if "editar_index" not in st.session_state:
-    st.session_state.editar_index = None
 
 # --- Funções auxiliares ---
 def resetar_campos_insumo():
@@ -136,14 +134,10 @@ with st.expander("➕ Adicionar Insumo", expanded=True):
 if st.session_state.insumos:
     st.subheader("📦 Insumos adicionados")
     for i, insumo in enumerate(st.session_state.insumos):
-        cols = st.columns([6, 1, 1])
+        cols = st.columns([6, 1])
         with cols[0]:
             st.markdown(f"**{i+1}.** {insumo['descricao']} — {insumo['quantidade']} {insumo['unidade']}")
         with cols[1]:
-            if st.button("✏️ Editar", key=f"edit_{i}"):
-                st.session_state.editar_index = i
-                st.rerun()
-        with cols[2]:
             if st.button("🗑️", key=f"delete_{i}"):
                 st.session_state.insumos.pop(i)
                 st.rerun()
@@ -210,7 +204,14 @@ if st.checkbox("📖 Ver histórico de pedidos"):
     historico_path = "historico_pedidos.csv"
     if os.path.exists(historico_path):
         df = pd.read_csv(historico_path)
-        df["data"] = pd.to_datetime(df["data"])
+        try:
+            df["data"] = pd.to_datetime(df["data"], errors='coerce')
+        except Exception as e:
+            st.error(f"Erro ao processar datas: {e}")
+            st.stop()
+
+        df = df.dropna(subset=["data"])
+
         obra_filtro = st.selectbox("Filtrar por obra", ["Todas"] + sorted(df["obra"].unique()))
         mes_filtro = st.selectbox("Filtrar por mês", ["Todos"] + sorted(df["data"].dt.strftime("%Y-%m").unique()))
 
