@@ -139,13 +139,14 @@ if st.session_state.insumos:
         with cols[0]:
             st.markdown(f"**{i+1}.** {insumo['descricao']} — {insumo['quantidade']} {insumo['unidade']}")
         with cols[1]:
-            if st.button("✏️", key=f"edit_{i}"):
-                st.session_state.descricao = insumo["descricao"]
-                st.session_state.descricao_livre = ""
-                st.session_state.codigo = insumo["codigo"]
-                st.session_state.unidade = insumo["unidade"]
-                st.session_state.quantidade = insumo["quantidade"]
-                st.session_state.complemento = insumo["complemento"]
+            if st.button("✏️ Editar", key=f"edit_{i}"):
+                st.session_state["resetar_insumo"] = False
+                st.session_state["descricao"] = insumo["descricao"]
+                st.session_state["descricao_livre"] = ""
+                st.session_state["codigo"] = insumo["codigo"]
+                st.session_state["unidade"] = insumo["unidade"]
+                st.session_state["quantidade"] = insumo["quantidade"]
+                st.session_state["complemento"] = insumo["complemento"]
                 st.session_state.insumos.pop(i)
                 st.rerun()
         with cols[2]:
