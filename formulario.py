@@ -118,6 +118,13 @@ descricao = st.selectbox(
     if descricao_editar in df_insumos["Descrição"].tolist() else 0
 )
 
+# Preenche código e unidade ao selecionar uma descrição, caso não esteja editando
+if descricao and descricao_livre_editar == "":
+    dados_insumo = df_insumos[df_insumos["Descrição"] == descricao]
+    if not dados_insumo.empty:
+        codigo_editar = dados_insumo.iloc[0]["Código"]
+        unidade_editar = dados_insumo.iloc[0]["Unidade"]
+
 st.write("Ou preencha manualmente se não estiver listado:")
 descricao_livre = st.text_input("Nome do insumo (livre)", key="descricao_livre", value=descricao_livre_editar)
 st.text_input("Código do insumo", value=codigo_editar, disabled=True)
