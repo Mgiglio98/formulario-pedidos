@@ -204,15 +204,19 @@ if st.checkbox("📖 Ver histórico de pedidos"):
     historico_path = "historico_pedidos.csv"
     if os.path.exists(historico_path):
         df = pd.read_csv(historico_path)
-        try:
-            df["data"] = pd.to_datetime(df["data"], errors='coerce')
-        except Exception as e:
-            st.error(f"Erro ao processar datas: {e}")
+
+        if "data" in df.columns:
+            try:
+                df["data"] = pd.to_datetime(df["data"], errors="coerce")
+                df = df[df["data"].notna()]
+            except Exception as e:
+                st.error(f"Erro ao processar datas: {e}")
+                st.stop()
+        else:
+            st.error("A coluna 'data' não foi encontrada no histórico.")
             st.stop()
 
-        df = df.dropna(subset=["data"])
-
-        obra_filtro = st.selectbox("Filtrar por obra", ["Todas"] + sorted(df["obra"].unique()))
+        obra_filtro = st.selectbox("Filtrar por obra", ["Todas"] + sorted(df["obra"].dropna().unique()))
         mes_filtro = st.selectbox("Filtrar por mês", ["Todos"] + sorted(df["data"].dt.strftime("%Y-%m").unique()))
 
         if obra_filtro != "Todas":
