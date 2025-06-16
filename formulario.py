@@ -132,6 +132,24 @@ st.divider()
 with st.expander("➕ Adicionar Insumo", expanded=True):
     adicionar_insumo(df_insumos)
 
+# Inicializa o índice de edição, se necessário
+if "editar_index" not in st.session_state:
+    st.session_state.editar_index = None
+
+# Carrega dados do insumo a ser editado, antes da renderização dos widgets
+if st.session_state.editar_index is not None:
+    insumo = st.session_state.insumos[st.session_state.editar_index]
+    st.session_state["descricao"] = insumo["descricao"]
+    st.session_state["descricao_livre"] = ""
+    st.session_state["codigo"] = insumo["codigo"]
+    st.session_state["unidade"] = insumo["unidade"]
+    st.session_state["quantidade"] = insumo["quantidade"]
+    st.session_state["complemento"] = insumo["complemento"]
+    st.session_state.insumos.pop(st.session_state.editar_index)
+    st.session_state.editar_index = None
+    st.rerun()
+
+# Renderização da lista com opções de editar/excluir
 if st.session_state.insumos:
     st.subheader("📦 Insumos adicionados")
     for i, insumo in enumerate(st.session_state.insumos):
@@ -140,14 +158,7 @@ if st.session_state.insumos:
             st.markdown(f"**{i+1}.** {insumo['descricao']} — {insumo['quantidade']} {insumo['unidade']}")
         with cols[1]:
             if st.button("✏️ Editar", key=f"edit_{i}"):
-                st.session_state["resetar_insumo"] = False
-                st.session_state["descricao"] = insumo["descricao"]
-                st.session_state["descricao_livre"] = ""
-                st.session_state["codigo"] = insumo["codigo"]
-                st.session_state["unidade"] = insumo["unidade"]
-                st.session_state["quantidade"] = insumo["quantidade"]
-                st.session_state["complemento"] = insumo["complemento"]
-                st.session_state.insumos.pop(i)
+                st.session_state.editar_index = i
                 st.rerun()
         with cols[2]:
             if st.button("🗑️", key=f"delete_{i}"):
