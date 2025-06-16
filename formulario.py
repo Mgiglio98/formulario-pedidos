@@ -23,11 +23,8 @@ def resetar_formulario():
 
 def registrar_historico(numero, obra, data):
     import csv
-
     historico_path = "historico_pedidos.csv"
-    registro = [numero, obra, data.strftime("%Y-%m-%d")]
-
-    # Cria o arquivo com cabeçalho se não existir
+    registro = [str(numero), str(obra), data.strftime("%Y-%m-%d")]
     if not os.path.exists(historico_path):
         with open(historico_path, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
@@ -35,28 +32,25 @@ def registrar_historico(numero, obra, data):
             writer.writerow(registro)
         st.success(f"📌 Histórico criado com: {registro}")
         return
-
-    # Verifica se o número já está no histórico
     ja_existente = False
     linhas_existentes = []
     with open(historico_path, "r", encoding="utf-8") as f:
         reader = csv.reader(f)
         for i, row in enumerate(reader):
             if i == 0:
-                linhas_existentes.append(row)  # cabeçalho
+                linhas_existentes.append(row)
                 continue
-            if row[0] == str(numero) and row[1] == obra:
+            if row[0] == str(numero) and row[1] == str(obra):
                 ja_existente = True
             linhas_existentes.append(row)
-
     if not ja_existente:
-        linhas_existentes.append([str(numero), obra, data.strftime("%Y-%m-%d")])
+        linhas_existentes.append(registro)
         with open(historico_path, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerows(linhas_existentes)
         st.success(f"📌 Pedido {numero} adicionado ao histórico.")
     else:
-        st.warning(f"ℹ️ Pedido {numero} já estava no histórico.")
+        st.warning(f"ℹ️ Pedido {numero} já está no histórico.")
 
 def carregar_dados():
     df_empreend = pd.read_excel("Empreendimentos.xlsx")
@@ -235,8 +229,8 @@ if st.button("📤 Enviar Pedido"):
 if st.checkbox("📖 Ver histórico de pedidos"):
     historico_path = "historico_pedidos.csv"
     if os.path.exists(historico_path):
-        df = pd.read_csv(historico_path)
-
+        df = pd.read_csv(historico_path, dtype={"numero": str, "obra": str, "data": str})
+    
         if "data" in df.columns:
             try:
                 df["data"] = pd.to_datetime(df["data"], errors="coerce")
