@@ -89,65 +89,48 @@ with st.expander("📋 Dados do Pedido", expanded=True):
 
 st.divider()
 
-# --- Inicializa variáveis auxiliares para edição ---
-descricao_editar = ""
-descricao_livre_editar = ""
-codigo_editar = ""
-unidade_editar = ""
-quantidade_editar = 0.0
-complemento_editar = ""
+# --- Adição de Insumos ---
+with st.expander("➕ Adicionar Insumo", expanded=True):
+    if st.session_state.resetar_insumo:
+        st.session_state.descricao = ""
+        st.session_state.descricao_livre = ""
+        st.session_state.codigo = ""
+        st.session_state.unidade = ""
+        st.session_state.quantidade = 0.0
+        st.session_state.complemento = ""
+        st.session_state.resetar_insumo = False
 
-if st.session_state.editar_index is not None:
-    editar = st.session_state.insumos[st.session_state.editar_index]
-    descricao_editar = editar["descricao"]
-    codigo_editar = editar["codigo"]
-    unidade_editar = editar["unidade"]
-    quantidade_editar = editar["quantidade"]
-    complemento_editar = editar["complemento"]
-    st.session_state.insumos.pop(st.session_state.editar_index)
-    st.session_state.editar_index = None
+    descricao = st.selectbox("Descrição do insumo", df_insumos["Descrição"].unique(), key="descricao")
+    codigo = ""
+    unidade = ""
+    if descricao:
+        dados_insumo = df_insumos[df_insumos["Descrição"] == descricao].iloc[0]
+        codigo = dados_insumo["Código"]
+        unidade = dados_insumo["Unidade"]
 
-# --- Formulário de Insumo ---
-st.markdown("### ➕ Adicionar ou Editar Insumo")
+    st.write("Ou preencha manualmente se não estiver listado:")
+    descricao_livre = st.text_input("Nome do insumo (livre)", key="descricao_livre")
+    st.text_input("Código do insumo", value=codigo, disabled=True)
+    unidade = st.text_input("Unidade", value=unidade, key="unidade")
+    quantidade = st.number_input("Quantidade", min_value=0.0, format="%.2f", key="quantidade")
+    complemento = st.text_area("Complemento", key="complemento")
 
-descricao = st.selectbox(
-    "Descrição do insumo",
-    df_insumos["Descrição"].unique(),
-    key="descricao",
-    index=df_insumos["Descrição"].tolist().index(descricao_editar)
-    if descricao_editar in df_insumos["Descrição"].tolist() else 0
-)
-
-# Preenche código e unidade ao selecionar uma descrição, caso não esteja editando
-if descricao and descricao_livre_editar == "":
-    dados_insumo = df_insumos[df_insumos["Descrição"] == descricao]
-    if not dados_insumo.empty:
-        codigo_editar = dados_insumo.iloc[0]["Código"]
-        unidade_editar = dados_insumo.iloc[0]["Unidade"]
-
-st.write("Ou preencha manualmente se não estiver listado:")
-descricao_livre = st.text_input("Nome do insumo (livre)", key="descricao_livre", value=descricao_livre_editar)
-st.text_input("Código do insumo", value=codigo_editar, disabled=True)
-unidade = st.text_input("Unidade", key="unidade", value=unidade_editar)
-quantidade = st.number_input("Quantidade", min_value=0.0, format="%.2f", key="quantidade", value=quantidade_editar)
-complemento = st.text_area("Complemento", key="complemento", value=complemento_editar)
-
-if st.button("➕ Adicionar insumo"):
-    descricao_final = descricao if descricao else descricao_livre
-    if descricao_final and unidade.strip() and quantidade > 0:
-        novo_insumo = {
-            "descricao": descricao_final,
-            "codigo": codigo_editar,
-            "unidade": unidade,
-            "quantidade": quantidade,
-            "complemento": complemento,
-        }
-        st.session_state.insumos.append(novo_insumo)
-        st.success("Insumo adicionado com sucesso!")
-        resetar_campos_insumo()
-        st.rerun()
-    else:
-        st.warning("Preencha todos os campos obrigatórios do insumo.")
+    if st.button("➕ Adicionar insumo"):
+        descricao_final = descricao if descricao else descricao_livre
+        if descricao_final and unidade.strip() and quantidade > 0:
+            novo_insumo = {
+                "descricao": descricao_final,
+                "codigo": codigo,
+                "unidade": unidade,
+                "quantidade": quantidade,
+                "complemento": complemento,
+            }
+            st.session_state.insumos.append(novo_insumo)
+            st.success("Insumo adicionado com sucesso!")
+            resetar_campos_insumo()
+            st.rerun()
+        else:
+            st.warning("Preencha todos os campos obrigatórios do insumo.")
 
 # --- Renderiza tabela de insumos ---
 if st.session_state.insumos:
