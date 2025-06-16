@@ -62,10 +62,7 @@ insumos_vazios = pd.DataFrame({"Código": [""], "Descrição": [""], "Unidade": 
 df_insumos = pd.concat([insumos_vazios, df_insumos], ignore_index=True)
 
 # --- Logo e título ---
-st.markdown(
-    "<div style='text-align: center;'><img src='logo.png' width='250'></div>",
-    unsafe_allow_html=True
-)
+st.image("assets/logo.png", width=250)
 st.markdown("## Sistema de Pedidos de Materiais")
 
 with st.expander("📋 Dados do Pedido", expanded=True):
