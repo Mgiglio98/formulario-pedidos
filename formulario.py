@@ -45,7 +45,6 @@ def carregar_dados():
     df_empreend = df_empreend.sort_index()
     insumos_vazios = pd.DataFrame({"Código": [""], "Descrição": [""], "Unidade": [""]})
     df_insumos = pd.concat([insumos_vazios, df_insumos], ignore_index=True)
-    df_insumos["Descrição_lower"] = df_insumos["Descrição"].str.lower()
     return df_empreend, df_insumos
 
 # --- Carrega dados ---
@@ -106,7 +105,12 @@ with st.expander("➕ Adicionar Insumo", expanded=True):
         st.session_state.complemento = ""
         st.session_state.resetar_insumo = False
 
-    descricao = st.selectbox("Descrição do insumo", df_insumos["Descrição"].unique(), key="descricao")
+     descricao = st.selectbox(
+        "Descrição do insumo",
+        options=df_insumos["Descrição"].unique(),
+        key="descricao",
+        format_func=lambda x: x.title() if isinstance(x, str) else x
+    )
 
     codigo = ""
     unidade = ""
