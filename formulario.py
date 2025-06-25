@@ -56,7 +56,7 @@ st.markdown("""
     <div style='text-align: center;'>
         <h2 style='color: #003366;'>Sistema de Pedidos de Materiais</h2>
         <p style='font-size: 14px; color: #555;'>Preencha os campos com atenção. Evite abreviações desnecessárias.<br>
-        Para pedidos novos, utilize sempre códigos oficiais quando disponíveis.</p>
+        </p>
     </div>
 """, unsafe_allow_html=True)
 
