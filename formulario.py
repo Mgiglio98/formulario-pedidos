@@ -185,6 +185,10 @@ if st.button("📤 Enviar Pedido"):
         st.warning("⚠️ Preencha todos os campos obrigatórios antes de enviar o pedido.")
         st.stop()
 
+    if not st.session_state.insumos:
+        st.warning("⚠️ Adicione pelo menos um insumo antes de enviar o pedido.")
+        st.stop()
+
     try:
         caminho_modelo = "Modelo_Pedido.xlsx"
         wb = load_workbook(caminho_modelo)
