@@ -45,6 +45,7 @@ def carregar_dados():
     df_empreend = df_empreend.sort_index()
     insumos_vazios = pd.DataFrame({"Código": [""], "Descrição": [""], "Unidade": [""]})
     df_insumos = pd.concat([insumos_vazios, df_insumos], ignore_index=True)
+    df_insumos["Descrição_lower"] = df_insumos["Descrição"].str.lower()
     return df_empreend, df_insumos
 
 # --- Carrega dados ---
@@ -105,7 +106,10 @@ with st.expander("➕ Adicionar Insumo", expanded=True):
         st.session_state.complemento = ""
         st.session_state.resetar_insumo = False
 
-    descricao = st.selectbox("Descrição do insumo", df_insumos["Descrição"].unique(), key="descricao")
+    descricao_input = st.text_input("Buscar descrição do insumo").lower()
+    opcoes_filtradas = df_insumos[df_insumos["Descrição_lower"].str.contains(descricao_input, na=False)]["Descrição"].unique()
+    descricao = st.selectbox("Descrição do insumo", opcoes_filtradas, key="descricao")
+
     codigo = ""
     unidade = ""
     if descricao:
@@ -115,7 +119,7 @@ with st.expander("➕ Adicionar Insumo", expanded=True):
 
     st.write("Ou preencha manualmente se não estiver listado:")
     descricao_livre = st.text_input("Nome do insumo (livre)", key="descricao_livre")
-    st.text_input("Código do insumo", value=codigo, disabled=True)
+    codigo_manual = st.text_input("Código do insumo (opcional)", value=codigo, disabled=bool(descricao), key="codigo")
     unidade = st.text_input("Unidade", value=unidade, key="unidade")
     quantidade = st.number_input("Quantidade", min_value=0.0, format="%.2f", key="quantidade")
     complemento = st.text_area("Complemento", key="complemento")
@@ -125,7 +129,7 @@ with st.expander("➕ Adicionar Insumo", expanded=True):
         if descricao_final and unidade.strip() and quantidade > 0:
             novo_insumo = {
                 "descricao": descricao_final,
-                "codigo": codigo,
+                "codigo": codigo if descricao else codigo_manual,
                 "unidade": unidade,
                 "quantidade": quantidade,
                 "complemento": complemento,
