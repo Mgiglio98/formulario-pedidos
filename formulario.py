@@ -105,7 +105,7 @@ with st.expander("➕ Adicionar Insumo", expanded=True):
         st.session_state.complemento = ""
         st.session_state.resetar_insumo = False
 
-    descricao = st.selectbox("Descrição do insumo", df_insumos["Descrição"].unique(), key="descricao")
+    descricao = st.selectbox("Descrição do insumo (Digite em Maiúsculo)", df_insumos["Descrição"].unique(), key="descricao")
     codigo = ""
     unidade = ""
     if descricao:
