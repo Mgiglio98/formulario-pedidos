@@ -57,7 +57,7 @@ with col2:
 
 st.markdown("""
     <div style='text-align: center;'>
-        <h2 style='color: #555;'>Sistema de Pedidos de Materiais</h2>
+        <h2 style='color: #000000;'>Sistema de Pedidos de Materiais</h2>
         <p style='font-size: 14px; color: #555;'>Preencha os campos com atenção. Evite abreviações desnecessárias.<br>
         </p>
     </div>
