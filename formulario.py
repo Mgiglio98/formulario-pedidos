@@ -51,7 +51,12 @@ def carregar_dados():
 df_empreend, df_insumos = carregar_dados()
 
 # --- Logo e título ---
-st.image("logo.png", width=300)
+st.markdown(
+    "<div style='text-align: center;'>"
+    "<img src='logo.png' width='300'>"
+    "</div>",
+    unsafe_allow_html=True
+)
 st.markdown("""
     <div style='text-align: center;'>
         <h2 style='color: #003366;'>Sistema de Pedidos de Materiais</h2>
