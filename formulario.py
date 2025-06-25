@@ -51,12 +51,20 @@ def carregar_dados():
 df_empreend, df_insumos = carregar_dados()
 
 # --- Logo e título ---
-from PIL import Image
+def imagem_base64(caminho_imagem):
+    with open(caminho_imagem, "rb") as img_file:
+        img_base64 = base64.b64encode(img_file.read()).decode()
+    return img_base64
 
-logo = Image.open("logo.png")
-st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
-st.image(logo, width=300)
-st.markdown("</div>", unsafe_allow_html=True)
+img_base64 = imagem_base64("logo.png")
+st.markdown(
+    f"""
+    <div style='text-align: center;'>
+        <img src='data:image/png;base64,{img_base64}' width='300'/>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 st.markdown("""
     <div style='text-align: center;'>
