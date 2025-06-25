@@ -116,11 +116,23 @@ with st.expander("➕ Adicionar Insumo", expanded=True):
     st.write("Ou preencha manualmente se não estiver listado:")
     descricao_livre = st.text_input("Nome do insumo (livre)", key="descricao_livre")
     
-    # Código sempre bloqueado
-    st.text_input("Código do insumo", value=codigo if descricao else "", key="codigo", disabled=True)
+    # Verifica se insumo foi selecionado da base
+    usando_base = bool(descricao and not descricao_livre)
     
-    # Unidade somente bloqueada se veio da base
-    unidade = st.text_input("Unidade", value=unidade, key="unidade", disabled=bool(descricao))
+    # Define código e unidade com base no tipo de entrada
+    if usando_base:
+        dados_insumo = df_insumos[df_insumos["Descrição"] == descricao].iloc[0]
+        codigo = dados_insumo["Código"]
+        unidade = dados_insumo["Unidade"]
+    else:
+        codigo = ""
+        unidade = ""
+    
+    # Campo código sempre bloqueado
+    st.text_input("Código do insumo", value=codigo, key="codigo", disabled=True)
+    
+    # Campo unidade apenas editável se for insumo manual
+    unidade = st.text_input("Unidade", value=unidade, key="unidade", disabled=usando_base)
 
     quantidade = st.number_input("Quantidade", min_value=0.0, format="%.2f", key="quantidade")
     complemento = st.text_area("Complemento", key="complemento")
