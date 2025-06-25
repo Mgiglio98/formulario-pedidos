@@ -105,12 +105,7 @@ with st.expander("➕ Adicionar Insumo", expanded=True):
         st.session_state.complemento = ""
         st.session_state.resetar_insumo = False
 
-    descricao = st.selectbox(
-        "Descrição do insumo",
-        options=sorted(df_insumos["Descrição"].unique(), key=lambda x: x.lower()),
-        key="descricao"
-    )
-
+    descricao = st.selectbox("Descrição do insumo", df_insumos["Descrição"].unique(), key="descricao")
     codigo = ""
     unidade = ""
     if descricao:
@@ -120,17 +115,19 @@ with st.expander("➕ Adicionar Insumo", expanded=True):
 
     st.write("Ou preencha manualmente se não estiver listado:")
     descricao_livre = st.text_input("Nome do insumo (livre)", key="descricao_livre")
-    codigo_manual = st.text_input("Código do insumo (opcional)", value=codigo, disabled=bool(descricao), key="codigo")
+    st.text_input("Código do insumo", value=codigo, disabled=True)
     unidade = st.text_input("Unidade", value=unidade, key="unidade")
     quantidade = st.number_input("Quantidade", min_value=0.0, format="%.2f", key="quantidade")
     complemento = st.text_area("Complemento", key="complemento")
 
     if st.button("➕ Adicionar insumo"):
         descricao_final = descricao if descricao else descricao_livre
-        if descricao_final and unidade.strip() and quantidade > 0:
+        usando_base = bool(descricao)  # True se o insumo veio do selectbox
+    
+        if descricao_final and quantidade > 0 and (usando_base or unidade.strip()):
             novo_insumo = {
                 "descricao": descricao_final,
-                "codigo": codigo if descricao else codigo_manual,
+                "codigo": codigo if usando_base else "",
                 "unidade": unidade,
                 "quantidade": quantidade,
                 "complemento": complemento,
