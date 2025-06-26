@@ -109,20 +109,9 @@ with st.expander("➕ Adicionar Insumo", expanded=True):
         st.session_state.resetar_insumo = False
 
     descricao = st.selectbox("Descrição do insumo (Digite em Maiúsculo)", df_insumos["Descrição"].unique(), key="descricao")
-    codigo = ""
-    unidade = ""
-    if descricao:
-        dados_insumo = df_insumos[df_insumos["Descrição"] == descricao].iloc[0]
-        codigo = dados_insumo["Código"]
-        unidade = dados_insumo["Unidade"]
-    
-    st.write("Ou preencha manualmente se não estiver listado:")
-    descricao_livre = st.text_input("Nome do insumo (livre)", key="descricao_livre")
-    
-    # Verifica se insumo foi selecionado da base
-    usando_base = bool(descricao and not descricao_livre)
-    
-    # Define código e unidade com base no tipo de entrada
+
+    usando_base = bool(descricao and descricao in df_insumos["Descrição"].values)
+
     if usando_base:
         dados_insumo = df_insumos[df_insumos["Descrição"] == descricao].iloc[0]
         codigo = dados_insumo["Código"]
@@ -130,20 +119,23 @@ with st.expander("➕ Adicionar Insumo", expanded=True):
     else:
         codigo = ""
         unidade = ""
-    
+
+    # Campo de descrição livre (desativado se usando insumo da base)
+    st.write("Ou preencha manualmente se não estiver listado:")
+    descricao_livre = st.text_input("Nome do insumo (livre)", key="descricao_livre", disabled=usando_base)
+
     # Campo código sempre bloqueado
     st.text_input("Código do insumo", value=codigo, key="codigo", disabled=True)
-    
-    # Campo unidade apenas editável se for insumo manual
+
+    # Campo unidade bloqueado se usando insumo da base
     unidade = st.text_input("Unidade", value=unidade, key="unidade", disabled=usando_base)
 
     quantidade = st.number_input("Quantidade", min_value=0.0, format="%.2f", key="quantidade")
     complemento = st.text_area("Complemento", key="complemento")
 
     if st.button("➕ Adicionar insumo"):
-        descricao_final = descricao if descricao else descricao_livre
-        usando_base = bool(descricao)  # True se o insumo veio do selectbox
-    
+        descricao_final = descricao if usando_base else descricao_livre
+
         if descricao_final and quantidade > 0 and (usando_base or unidade.strip()):
             novo_insumo = {
                 "descricao": descricao_final,
