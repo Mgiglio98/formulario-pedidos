@@ -100,7 +100,7 @@ st.divider()
 # --- Adição de Insumos ---
 with st.expander("➕ Adicionar Insumo", expanded=True):
     if st.session_state.resetar_insumo:
-        st.session_state.descricao = ""
+        st.session_state.descricao = "--- SELECIONE ---"
         st.session_state.descricao_livre = ""
         st.session_state.codigo = ""
         st.session_state.unidade = ""
@@ -108,27 +108,29 @@ with st.expander("➕ Adicionar Insumo", expanded=True):
         st.session_state.complemento = ""
         st.session_state.resetar_insumo = False
 
-    descricao = st.selectbox("Descrição do insumo (Digite em Maiúsculo)", df_insumos["Descrição"].unique(), key="descricao")
+    # Adiciona o placeholder no topo da lista de insumos
+    df_insumos_lista = pd.concat([
+        pd.DataFrame([{"Código": "", "Descrição": "--- SELECIONE ---", "Unidade": ""}]),
+        df_insumos
+    ], ignore_index=True)
 
-    # Verifica se insumo foi selecionado da base (descarta linha vazia)
-    usando_base = descricao.strip() != ""
+    descricao = st.selectbox("Descrição do insumo (Digite em Maiúsculo)", df_insumos_lista["Descrição"], key="descricao")
+
+    usando_base = descricao != "--- SELECIONE ---"
 
     if usando_base:
-        dados_insumo = df_insumos[df_insumos["Descrição"] == descricao].iloc[0]
+        dados_insumo = df_insumos_lista[df_insumos_lista["Descrição"] == descricao].iloc[0]
         codigo = dados_insumo["Código"]
         unidade = dados_insumo["Unidade"]
     else:
         codigo = ""
         unidade = ""
 
-    # Campo de descrição livre, desativado se usando base
+    # Campo de entrada manual só é ativado se nenhum insumo da base foi selecionado
     st.write("Ou preencha manualmente se não estiver listado:")
     descricao_livre = st.text_input("Nome do insumo (livre)", key="descricao_livre", disabled=usando_base)
 
-    # Campo código sempre bloqueado
     st.text_input("Código do insumo", value=codigo, key="codigo", disabled=True)
-
-    # Campo unidade bloqueado se usando base
     unidade = st.text_input("Unidade", value=unidade, key="unidade", disabled=usando_base)
 
     quantidade = st.number_input("Quantidade", min_value=0.0, format="%.2f", key="quantidade")
