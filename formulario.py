@@ -110,7 +110,8 @@ with st.expander("➕ Adicionar Insumo", expanded=True):
 
     descricao = st.selectbox("Descrição do insumo (Digite em Maiúsculo)", df_insumos["Descrição"].unique(), key="descricao")
 
-    usando_base = bool(descricao and descricao in df_insumos["Descrição"].values)
+    # Verifica se insumo foi selecionado da base (descarta linha vazia)
+    usando_base = descricao.strip() != ""
 
     if usando_base:
         dados_insumo = df_insumos[df_insumos["Descrição"] == descricao].iloc[0]
@@ -120,14 +121,14 @@ with st.expander("➕ Adicionar Insumo", expanded=True):
         codigo = ""
         unidade = ""
 
-    # Campo de descrição livre (desativado se usando insumo da base)
+    # Campo de descrição livre, desativado se usando base
     st.write("Ou preencha manualmente se não estiver listado:")
     descricao_livre = st.text_input("Nome do insumo (livre)", key="descricao_livre", disabled=usando_base)
 
     # Campo código sempre bloqueado
     st.text_input("Código do insumo", value=codigo, key="codigo", disabled=True)
 
-    # Campo unidade bloqueado se usando insumo da base
+    # Campo unidade bloqueado se usando base
     unidade = st.text_input("Unidade", value=unidade, key="unidade", disabled=usando_base)
 
     quantidade = st.number_input("Quantidade", min_value=0.0, format="%.2f", key="quantidade")
