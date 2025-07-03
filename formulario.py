@@ -193,7 +193,7 @@ if st.button("📤 Enviar Pedido"):
         ws = wb["Pedido"]
 
         # 🔄 Atualizado conforme solicitado
-        ws["G2"] = st.session_state.pedido_numero
+        ws["F2"] = st.session_state.pedido_numero
         ws["C3"] = st.session_state.data_pedido.strftime("%d/%m/%Y")
         ws["C4"] = st.session_state.solicitante
         ws["C5"] = st.session_state.executivo
@@ -206,9 +206,9 @@ if st.button("📤 Enviar Pedido"):
         for insumo in st.session_state.insumos:
             ws[f"B{linha}"] = insumo["codigo"]
             ws[f"C{linha}"] = insumo["descricao"]
-            ws[f"E{linha}"] = insumo["unidade"]
-            ws[f"F{linha}"] = insumo["quantidade"]
-            ws[f"G{linha}"] = insumo["complemento"]
+            ws[f"D{linha}"] = insumo["unidade"]
+            ws[f"E{linha}"] = insumo["quantidade"]
+            ws[f"F{linha}"] = insumo["complemento"]
             linha += 1
 
         nome_saida = f"pedido_{st.session_state.pedido_numero or 'sem_numero'}_{st.session_state.obra_selecionada}.xlsx"
