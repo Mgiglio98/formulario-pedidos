@@ -192,22 +192,23 @@ if st.button("📤 Enviar Pedido"):
         wb = load_workbook(caminho_modelo)
         ws = wb["Pedido"]
 
-        ws["H2"] = st.session_state.pedido_numero
-        ws["D3"] = st.session_state.data_pedido.strftime("%d/%m/%Y")
-        ws["D4"] = st.session_state.solicitante
-        ws["D5"] = st.session_state.executivo
-        ws["D7"] = st.session_state.obra_selecionada
-        ws["D8"] = st.session_state.cnpj
-        ws["D9"] = st.session_state.endereco
-        ws["D10"] = st.session_state.cep
+        # 🔄 Atualizado conforme solicitado
+        ws["G2"] = st.session_state.pedido_numero
+        ws["C3"] = st.session_state.data_pedido.strftime("%d/%m/%Y")
+        ws["C4"] = st.session_state.solicitante
+        ws["C5"] = st.session_state.executivo
+        ws["C7"] = st.session_state.obra_selecionada
+        ws["C8"] = st.session_state.cnpj
+        ws["C9"] = st.session_state.endereco
+        ws["C10"] = st.session_state.cep
 
         linha = 13
         for insumo in st.session_state.insumos:
-            ws[f"C{linha}"] = insumo["codigo"]
-            ws[f"D{linha}"] = insumo["descricao"]
-            ws[f"F{linha}"] = insumo["unidade"]
-            ws[f"G{linha}"] = insumo["quantidade"]
-            ws[f"H{linha}"] = insumo["complemento"]
+            ws[f"B{linha}"] = insumo["codigo"]
+            ws[f"C{linha}"] = insumo["descricao"]
+            ws[f"E{linha}"] = insumo["unidade"]
+            ws[f"F{linha}"] = insumo["quantidade"]
+            ws[f"G{linha}"] = insumo["complemento"]
             linha += 1
 
         nome_saida = f"pedido_{st.session_state.pedido_numero or 'sem_numero'}_{st.session_state.obra_selecionada}.xlsx"
