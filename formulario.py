@@ -40,11 +40,18 @@ def registrar_historico(numero, obra, data):
 def carregar_dados():
     df_empreend = pd.read_excel("Empreendimentos.xlsx")
     df_insumos = pd.read_excel("Insumos.xlsx")
+
+    # 🔧 Remover linhas onde "Descrição" está vazia ou nula
+    df_insumos = df_insumos[df_insumos["Descrição"].notna() & (df_insumos["Descrição"].str.strip() != "")]
+
+    # Adiciona linha vazia no início
     df_empreend.loc[-1] = ["", "", "", ""]
     df_empreend.index = df_empreend.index + 1
     df_empreend = df_empreend.sort_index()
+
     insumos_vazios = pd.DataFrame({"Código": [""], "Descrição": [""], "Unidade": [""]})
     df_insumos = pd.concat([insumos_vazios, df_insumos], ignore_index=True)
+
     return df_empreend, df_insumos
 
 # --- Carrega dados ---
